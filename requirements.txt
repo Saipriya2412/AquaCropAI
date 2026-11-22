@@ -1,1 +1,7 @@
 requests
+Flask
+gunicorn
+requests
+tensorflow
+numpy
+pillow
