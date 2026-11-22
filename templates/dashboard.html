@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard | AquaCrop AI</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <nav class="navbar navbar-dark bg-success px-4">
+        <a href="/" class="navbar-brand fw-bold">🌱 AquaCrop AI</a>
+
+        <a href="/register" class="btn btn-light">
+            Add Farmer
+        </a>
+    </nav>
+
+    <div class="container mt-5">
+
+        <h2 class="text-success mb-4">
+            Farmer Dashboard
+        </h2>
+        <div class="mt-3 mb-4">
+
+    <a href="{{ url_for('weather') }}" class="btn btn-info">
+        🌦️ Live Weather Intelligence
+    </a>
+
+    <a href="{{ url_for('water') }}" class="btn btn-success">
+        💧 Water Intelligence
+    </a>
+    <a href="{{ url_for('groundwater') }}" class="btn btn-primary">
+    💧 Groundwater Intelligence
+</a>
+<a href="{{ url_for('disease') }}" class="btn btn-success">
+    🌿 Crop Disease Detection
+</a>
+</div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+
+                <h5 class="mb-3">Registered Farms</h5>
+
+                {% if farmers %}
+
+                <div class="table-responsive">
+
+                    <table class="table table-bordered table-striped">
+
+                        <thead class="table-success">
+                            <tr>
+                                <th>Name</th>
+                                <th>Location</th>
+                                <th>Crop</th>
+                                <th>Area (acres)</th>
+                                <th>Soil</th>
+                                <th>Crop Stage</th>
+                                <th>Water Source</th>
+                                <th>Irrigation Method</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for farmer in farmers %}
+
+                            <tr>
+                                <td>{{ farmer["farmer_name"] }}</td>
+                                <td>{{ farmer["location"] }}</td>
+                                <td>{{ farmer["crop"] }}</td>
+                                <td>{{ farmer["farm_area"] }}</td>
+                                <td>{{ farmer["soil_type"] }}</td>
+                                <td>{{ farmer["crop_stage"] }}</td>
+                                <td>{{ farmer["irrigation_source"] }}</td>
+                                <td>{{ farmer["irrigation_method"] }}</td>
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                {% else %}
+
+                <p class="text-muted">
+                    No farmers registered yet.
+                </p>
+
+                <a href="/register" class="btn btn-success">
+                    Register First Farm
+                </a>
+
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+
+<div class="container mt-4">
+
+    <div class="row g-4">
+
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h4 class="text-info">🌦️ Weather Intelligence</h4>
+
+                    <p>
+                        Get live weather information,
+                        temperature, humidity and rainfall forecasts.
+                    </p>
+
+                    <a href="{{ url_for('weather') }}"
+                       class="btn btn-info">
+                        Open Live Weather
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h4 class="text-success">💧 Water Intelligence</h4>
+
+                    <p>
+                        Analyze soil moisture, rainfall and
+                        water risk for your registered farms.
+                    </p>
+
+                    <a href="{{ url_for('water') }}"
+                       class="btn btn-success">
+                        Open Water Intelligence
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

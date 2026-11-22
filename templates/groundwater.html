@@ -1,0 +1,314 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Groundwater Intelligence | AquaCrop AI</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-light">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-dark bg-success px-4">
+        <a href="/" class="navbar-brand fw-bold">🌱 AquaCrop AI</a>
+        <a href="/dashboard" class="btn btn-light">Dashboard</a>
+    </nav>
+
+    <div class="container mt-5">
+
+        <h2 class="text-success">💧 Groundwater Intelligence</h2>
+
+        <p class="text-muted">
+            Record groundwater measurements and monitor water-level changes.
+        </p>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages() %}
+            {% for message in messages %}
+                <div class="alert alert-info">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+
+        <!-- Groundwater Registration Form -->
+        <div class="card shadow-sm mt-4">
+            <div class="card-body">
+
+                <h5 class="text-success mb-3">
+                    Record Groundwater Level
+                </h5>
+
+                <form method="POST" action="/groundwater">
+
+                    <div class="mb-3">
+                        <label class="form-label">Select Your Farm</label>
+
+                        <select name="farmer_id" class="form-select" required>
+                            <option value="">Select your farm</option>
+
+                            {% for farmer in farmers %}
+                            <option value="{{ farmer['id'] }}">
+                                {{ farmer['farmer_name'] }} - {{ farmer['crop'] }}
+                            </option>
+                            {% endfor %}
+
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Groundwater Depth (metres below ground level)
+                        </label>
+
+                        <input
+                            type="number"
+                            name="water_level"
+                            class="form-control"
+                            placeholder="Example: 15.5"
+                            min="0"
+                            step="0.1"
+                            required
+                        >
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Measurement Date</label>
+
+                        <input
+                            type="date"
+                            name="recorded_on"
+                            class="form-control"
+                            required
+                        >
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Notes (Optional)</label>
+
+                        <textarea
+                            name="notes"
+                            class="form-control"
+                            placeholder="Enter groundwater observations"
+                            rows="3"
+                        ></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100">
+                        Save Groundwater Record
+                    </button>
+
+                </form>
+
+            </div>
+        </div>
+
+
+        <!-- Groundwater Trend Chart -->
+        <div class="card shadow-sm mt-4">
+            <div class="card-body">
+
+                <h5 class="text-success mb-3">
+                    📊 Groundwater Level Trend
+                </h5>
+
+                <!-- Groundwater Status Alert -->
+
+                {% if groundwater_status == "Improving" %}
+
+                <div class="alert alert-success mt-3">
+                    <h5>🟢 Groundwater Status: Improving</h5>
+                    <p class="mb-0">{{ status_message }}</p>
+                    <strong>Trend Alert: Improving</strong>
+                </div>
+
+                {% elif groundwater_status == "Stable" %}
+
+                <div class="alert alert-warning mt-3">
+                    <h5>🟡 Groundwater Status: Stable</h5>
+                    <p class="mb-0">{{ status_message }}</p>
+                    <strong>Trend Alert: Monitor</strong>
+                </div>
+
+                {% elif groundwater_status == "Declining" %}
+
+                <div class="alert alert-danger mt-3">
+                    <h5>🔴 Groundwater Status: Declining</h5>
+                    <p class="mb-0">{{ status_message }}</p>
+                    <strong>Trend Alert: Attention Required</strong>
+                </div>
+
+                {% else %}
+
+                <div class="alert alert-info mt-3">
+                    <h5>💧 Groundwater Status: Not enough data</h5>
+                    <p class="mb-0">{{ status_message }}</p>
+                </div>
+
+                {% endif %}
+
+
+                {% if records %}
+
+                <canvas id="groundwaterChart"></canvas>
+
+                <p class="text-muted small mt-3">
+                    A greater depth means the groundwater level is deeper.
+                    Compare measurements taken at different dates.
+                </p>
+
+                {% else %}
+
+                <p class="text-muted">
+                    No groundwater measurements available for the chart yet.
+                </p>
+
+                {% endif %}
+
+            </div>
+        </div>
+
+
+        <!-- Groundwater Records Table -->
+        <div class="card shadow-sm mt-4 mb-5">
+            <div class="card-body">
+
+                <h5 class="text-success">Groundwater Records</h5>
+
+                {% if records %}
+
+                <div class="table-responsive">
+
+                    <table class="table table-bordered table-striped mt-3">
+
+                        <thead class="table-success">
+                            <tr>
+                                <th>Farmer</th>
+                                <th>Water Depth (m)</th>
+                                <th>Date</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for record in records %}
+
+                            <tr>
+                                <td>{{ record['farmer_name'] }}</td>
+                                <td>{{ record['water_level'] }}</td>
+                                <td>{{ record['recorded_on'] }}</td>
+                                <td>{{ record['notes'] or '-' }}</td>
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                {% else %}
+
+                <p class="text-muted mt-3">
+                    No groundwater records available yet.
+                </p>
+
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- Chart JavaScript -->
+    {% if records %}
+
+    <script>
+
+        const groundwaterLabels = {{ records | map(attribute='recorded_on') | list | tojson }};
+
+        const groundwaterValues = {{ records | map(attribute='water_level') | list | tojson }};
+
+        const ctx = document.getElementById("groundwaterChart");
+
+        new Chart(ctx, {
+
+            type: "line",
+
+            data: {
+
+                labels: groundwaterLabels,
+
+                datasets: [{
+
+                    label: "Groundwater Depth (metres)",
+
+                    data: groundwaterValues,
+
+                    borderColor: "green",
+
+                    backgroundColor: "rgba(25, 135, 84, 0.15)",
+
+                    borderWidth: 3,
+
+                    pointRadius: 5,
+
+                    tension: 0.3,
+
+                    fill: true
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                scales: {
+
+                    y: {
+
+                        title: {
+
+                            display: true,
+
+                            text: "Depth (metres below ground level)"
+
+                        }
+
+                    },
+
+                    x: {
+
+                        title: {
+
+                            display: true,
+
+                            text: "Measurement Date"
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        });
+
+    </script>
+
+    {% endif %}
+
+</body>
+</html>
